@@ -202,8 +202,8 @@ public class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.ViewHold
 
                                                     if(message.equals(catalogFragment.getString(R.string.success))) {
                                                         catalogFragment.progressDialog.dismiss();
-                                                        catalogFragment.adapter.notifyItemRemoved(position);
-                                                        catalogFragment.catalogList.remove(position);
+                                                        products.remove(position);
+                                                        notifyItemRemoved(position);
                                                         catalogFragment.updateViews();
                                                     }
                                                 }

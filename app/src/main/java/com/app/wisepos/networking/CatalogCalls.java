@@ -30,7 +30,7 @@ public class CatalogCalls {
                 .create();
 
         Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl("http://161.35.209.115/app-scripts/item/addItem.php/")
+                .baseUrl("https://www.pantheracomics.com/app-scripts/item/addItem.php/")
                 .addConverterFactory(GsonConverterFactory.create(gson));
 
         Retrofit retrofit = builder.build();
@@ -57,7 +57,8 @@ public class CatalogCalls {
                     callback.onResult(status, productID, pictureURL);
                 }
                 else {
-                    callback.onResult(status);
+                    String error = response.body().getAsJsonPrimitive("error").getAsString();
+                    callback.onResult(error);
                 }
             }
 
@@ -76,7 +77,7 @@ public class CatalogCalls {
                 .create();
 
         Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl("http://161.35.209.115/app-scripts/item/updateItem.php/")
+                .baseUrl("https://www.pantheracomics.com/app-scripts/item/updateItem.php/")
                 .addConverterFactory(GsonConverterFactory.create(gson));
 
         Retrofit retrofit = builder.build();
@@ -112,10 +113,13 @@ public class CatalogCalls {
                 .create();
 
         Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl("http://161.35.209.115/app-scripts/item/deleteItem.php/")
+                .baseUrl("https://www.pantheracomics.com/app-scripts/item/deleteItem.php/")
                 .addConverterFactory(GsonConverterFactory.create(gson));
 
         Retrofit retrofit = builder.build();
+
+        System.out.println("Product ID: " + product.getID());
+        System.out.println("Product Picture URL: " + product.getPictureURL());
 
         CatalogInterface catalogInterface = retrofit.create(CatalogInterface.class);
         Call<JsonObject> call = catalogInterface.deleteItem(product.getID(), product.getPictureURL());
@@ -148,7 +152,7 @@ public class CatalogCalls {
                 .create();
 
         Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl("http://161.35.209.115/app-scripts/item/getItems.php/")
+                .baseUrl("https://www.pantheracomics.com/app-scripts/item/getItems.php/")
                 .addConverterFactory(GsonConverterFactory.create(gson));
 
         Retrofit retrofit = builder.build();

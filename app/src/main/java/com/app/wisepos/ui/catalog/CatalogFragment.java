@@ -6,12 +6,17 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
+import android.text.method.DigitsKeyListener;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,7 +41,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -47,6 +57,7 @@ import com.app.wisepos.databinding.FragmentCatalogBinding;
 import com.app.wisepos.datamodels.Product;
 import com.app.wisepos.networking.CatalogCalls;
 import com.app.wisepos.networking.ReaderCalls;
+import com.app.wisepos.ui.order.OrderDetailsFragment;
 import com.app.wisepos.utilities.Shared_Preferences;
 import com.app.wisepos.utilities.Utilities;
 import com.google.gson.Gson;
@@ -63,6 +74,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -93,11 +105,16 @@ public class CatalogFragment extends Fragment implements CatalogAdapter.ItemClic
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
         binding = FragmentCatalogBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         setupViews(root);
         return root;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setHasOptionsMenu(true);
     }
 
     void setupViews(View root) {
@@ -117,7 +134,7 @@ public class CatalogFragment extends Fragment implements CatalogAdapter.ItemClic
 
     void setupProgressDialog() {
         progressDialog = new ProgressDialog(getActivity());
-        progressDialog = Utilities.setupProgressDialog(progressDialog);
+        progressDialog = Utilities.setupProgressDialog(getContext(), progressDialog);
     }
 
     void setupSwipeRefreshLayout() {
@@ -152,7 +169,7 @@ public class CatalogFragment extends Fragment implements CatalogAdapter.ItemClic
 
     public void updateOrderDetailsButton(List<Product> cartList) {
         Float total = Utilities.calculateOrderTotal(cartList);
-        orderDetailsButton.setText(getString(R.string.order_details_button) + " " + "(€" + total + ")");
+        orderDetailsButton.setText(getString(R.string.order_details_button) + " " + "(€" + String.format("%.2f", total) + ")");
     }
 
     @Override
@@ -252,8 +269,34 @@ public class CatalogFragment extends Fragment implements CatalogAdapter.ItemClic
         EditText priceEditText = (EditText) dialog.findViewById(R.id.priceEditText);
         imageView = (ImageView) dialog.findViewById(R.id.imageView);
 
+        priceEditText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
+        priceEditText.setKeyListener(DigitsKeyListener.getInstance("0123456789."));
+
+        priceEditText.addTextChangedListener(new TextWatcher() {
+            public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
+                String text = arg0.toString();
+                if ((text.contains(".") && text.substring(text.indexOf(".") + 1).length() > 2) || text.length() > 5) {
+                    priceEditText.setText(text.substring(0, text.length() - 1));
+                    priceEditText.setSelection(priceEditText.getText().length());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+
+            public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
+
+            }
+        });
+
         if(action.equals(getString(R.string.add))) {
             addUpdateButton.setText(getString(R.string.add));
+            nameEditText.setText("");
+            descriptionEditText.setText("");
+            priceEditText.setText("0");
+            imageView.setImageResource(R.drawable.upload);
         }
         else {
             nameEditText.setText(productBeingUpdated.getName());
@@ -280,7 +323,6 @@ public class CatalogFragment extends Fragment implements CatalogAdapter.ItemClic
                 System.out.println("Product Name: " + name);
 
                 if(name.length() > 0 && description.length() > 0 && price > 0) {
-                    progressDialog.show();
                     if(action.equals(getString(R.string.add))) {
                         Product product = new Product(name, description, price, 0.91F);
                         addItem(product);
@@ -312,50 +354,63 @@ public class CatalogFragment extends Fragment implements CatalogAdapter.ItemClic
             f.createNewFile();
 
             //Convert bitmap to byte array
-            Bitmap bitmap = bitmapImage;
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 30, bos);
-            byte[] bitmapdata = bos.toByteArray();
+            if(bitmapImage != null) {
+                Bitmap bitmap = bitmapImage;
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 20, bos);
+                byte[] bitmapdata = bos.toByteArray();
 
-            //write the bytes in file
-            FileOutputStream fos = null;
-            try {
-                fos = new FileOutputStream(f);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            try {
-                fos.write(bitmapdata);
-                fos.flush();
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            CatalogCalls.addItem(product, f, new Utilities.CatalogCallback() {
-                @Override
-                public void onResult(String message) {
-                    progressDialog.dismiss();
+                //write the bytes in file
+                FileOutputStream fos = null;
+                try {
+                    fos = new FileOutputStream(f);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    fos.write(bitmapdata);
+                    fos.flush();
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
-                @Override
-                public void onResult(String message, String productID, String pictureURL) {
-                    progressDialog.dismiss();
-                    if(message.equals(getString(R.string.success))) {
-                        product.setID(productID);
-                        product.setPictureURL(pictureURL);
-                        catalogList.add(product);
-                        adapter.notifyItemInserted(catalogList.size() - 1);
-                        restoreScrollPositionAfterAdAdded();
-                        Toast.makeText(getContext(), getString(R.string.item_added), Toast.LENGTH_SHORT).show();
+                progressDialog.show();
+                CatalogCalls.addItem(product, f, new Utilities.CatalogCallback() {
+                    @Override
+                    public void onResult(String message) {
+                        progressDialog.dismiss();
+                        if(!message.equals(getString(R.string.success))) {
+                            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
 
-                @Override
-                public void onResult(String message, List<Product> catalogList) {
+                    @Override
+                    public void onResult(String message, String productID, String pictureURL) {
+                        progressDialog.dismiss();
+                        if(message.equals(getString(R.string.success))) {
+                            product.setID(productID);
+                            product.setPictureURL(pictureURL);
+                            catalogList.add(product);
+                            adapter.notifyItemInserted(catalogList.size() - 1);
+                            restoreScrollPositionAfterAdAdded();
+                            updateViews();
+                            Toast.makeText(getContext(), getString(R.string.item_added), Toast.LENGTH_SHORT).show();
+                        }
+                        else {
+                            Toast.makeText(getContext(), getString(R.string.item_added), Toast.LENGTH_SHORT).show();
+                        }
+                    }
 
-                }
-            });
+                    @Override
+                    public void onResult(String message, List<Product> catalogList) {
+
+                    }
+                });
+            }
+            else {
+                Toast.makeText(getContext(), getString(R.string.select_image), Toast.LENGTH_SHORT).show();
+            }
         }
         catch (IOException e) {
             throw new RuntimeException(e);
@@ -528,16 +583,19 @@ public class CatalogFragment extends Fragment implements CatalogAdapter.ItemClic
         if(Shared_Preferences.getCartProducts(getContext()) != null) {
             List<Product> cartList = Shared_Preferences.getCartProducts(getContext());
             if(cartList.size() > 0) {
-                progressDialog.show();
-                String readerID = "tmr_E9yOUw568aYcaY";
-                int total = Math.round(Utilities.calculateOrderTotal(cartList) * 100);
-                JSONObject items = Utilities.convertCatalogListIntoJsonArray(cartList);
-                ReaderCalls.displayItemsOnReader(readerID, total, items, new Utilities.ReaderCallback() {
-                    @Override
-                    public void onResult(String message) {
-                        progressDialog.dismiss();
-                    }
-                });
+                setHasOptionsMenu(false);
+               /* OrderDetailsFragment fragment = new OrderDetailsFragment();
+                fragment.setItems(cartList);
+                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.nav_host_fragment_activity_main, fragment);
+                fragmentTransaction.addToBackStack(getString(R.string.order_details_fragment_name));
+                fragmentTransaction.commit(); */
+
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("items", (Serializable) cartList);
+                NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_activity_main);
+                navController.navigate(R.id.navigation_order_details, bundle);
             }
             else {
                 Toast.makeText(getContext(), getString(R.string.select_a_product_first), Toast.LENGTH_SHORT).show();

@@ -17,12 +17,24 @@ import retrofit2.http.Part;
 public interface ReaderInterface {
 
     @FormUrlEncoded
+    @POST("create-payment-intent.php")
+    Call<JsonObject> createPaymentIntent(@Field("amount") int amount);
+
+    @FormUrlEncoded
     @POST("set-reader-display.php")
     Call<JsonObject> setReaderDisplay(@Field("readerID") String readerID, @Field("total") int total, @Field("items") JSONObject items);
 
     @FormUrlEncoded
-    @POST("deleteItem.php")
-    Call<JsonObject> deleteItem(@Field("itemID") String itemID, @Field("imageURL") String imageURL);
+    @POST("set-reader-display-simple.php")
+    Call<JsonObject> setReaderDisplaySimple(@Field("readerID") String readerID, @Field("total") int total);
+
+    @FormUrlEncoded
+    @POST("process-payment-intent.php")
+    Call<JsonObject> processPaymentIntent(@Field("readerID") String readerID, @Field("paymentIntentID") String paymentIntentID);
+
+    @FormUrlEncoded
+    @POST("cancel-payment-intent.php")
+    Call<JsonObject> cancelPaymentIntent(@Field("readerID") String readerID);
 
     @POST("getItems.php")
     Call<JsonObject> getItems();

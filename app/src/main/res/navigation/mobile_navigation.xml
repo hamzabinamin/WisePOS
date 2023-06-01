@@ -12,14 +12,26 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
+        android:id="@+id/navigation_purchase_history"
         android:name="com.app.wisepos.ui.dashboard.PurchaseHistoryFragment"
         android:label="@string/title_purchase_history"
         tools:layout="@layout/fragment_purchase_history" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
+        android:id="@+id/navigation_catalog"
         android:name="com.app.wisepos.ui.catalog.CatalogFragment"
         android:label="@string/title_items_catalog"
         tools:layout="@layout/fragment_catalog" />
+
+    <fragment
+        android:id="@+id/navigation_order_details"
+        android:name="com.app.wisepos.ui.order.OrderDetailsFragment"
+        android:label="@string/title_order_details"
+        tools:layout="@layout/fragment_order_details" />
+
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="com.app.wisepos.ui.settings.SettingsFragment"
+        android:label="@string/title_settings"
+        tools:layout="@layout/fragment_settings" />
 </navigation>

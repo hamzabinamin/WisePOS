@@ -42,4 +42,21 @@ public class Shared_Preferences {
         }
     }
 
+    public static void saveReaderID(Context context, String readerID) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("com.app.wisepos", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("Reader ID", readerID);
+        editor.commit();
+    }
+
+    public static String getReaderID(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("com.app.wisepos", Context.MODE_PRIVATE);
+
+        if(sharedPreferences.getString("Reader ID", null) != null) {
+            String readerID = sharedPreferences.getString("Reader ID", null);
+
+            return readerID;
+        }
+        return null;
+    }
 }

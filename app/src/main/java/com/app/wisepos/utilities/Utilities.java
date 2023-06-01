@@ -10,7 +10,9 @@ import android.util.Log;
 import androidx.appcompat.app.AlertDialog;
 
 import com.app.wisepos.R;
+import com.app.wisepos.datamodels.Order;
 import com.app.wisepos.datamodels.Product;
+import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,12 +21,15 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class Utilities {
 
-    public static ProgressDialog setupProgressDialog(ProgressDialog progressDialog) {
-        progressDialog.setMessage("Please Wait");
+    public static ProgressDialog setupProgressDialog(Context context, ProgressDialog progressDialog) {
+        progressDialog.setMessage(context.getString(R.string.please_wait));
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setIndeterminate(true);
         progressDialog.setCancelable(false);
@@ -66,6 +71,21 @@ public class Utilities {
         return total;
     }
 
+    public static Float orderTotalInUSD(Float total, Float usdRate) {
+        return ((1 / usdRate) * total);
+    }
+
+    public static Date convertStringToDate(String dateString) {
+        try {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            Date date = format.parse(dateString);
+
+            return date;
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static JSONObject convertCatalogListIntoJsonArray(List<Product> catalogList) {
         JSONObject jsonObject = new JSONObject();
         try {
@@ -75,6 +95,7 @@ public class Utilities {
                 Product product = catalogList.get(i);
                 JSONObject json = new JSONObject();
 
+                json.put("id", product.getID());
                 json.put("description", product.getName() + '-' + product.getDescription());
                 json.put("amount", product.getPriceInCents());
                 json.put("quantity", product.getQuantity());
@@ -90,7 +111,6 @@ public class Utilities {
         }
 
         return jsonObject;
-
     }
 
     // Callbacks
@@ -105,6 +125,14 @@ public class Utilities {
 
     public interface ReaderCallback {
         void onResult(String message);
+
+        void onResult(String message, JsonObject result);
+    }
+
+    public interface OrderCallback {
+        void onResult(String message);
+
+        void onResult(String message, List<Order> orderList);
     }
 
 }

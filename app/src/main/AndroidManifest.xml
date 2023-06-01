@@ -15,7 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WisePOS"
         tools:targetApi="31"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:name=".ApplicationClass">
+        <meta-data android:name="com.onesignal.NotificationServiceExtension"
+            android:value="com.app.wisepos.notification.NotificationServiceExtension" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

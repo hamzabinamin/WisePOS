@@ -3,6 +3,7 @@ package com.app.wisepos.adapters;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -60,10 +62,11 @@ public class PurchaseHistoryAdapter extends RecyclerView.Adapter<PurchaseHistory
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Order order = orders.get(position);
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy- hh:mm:ss a", Locale.US);
-        holder.orderIDTextView.setText(order.getID());
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss", Locale.US);
+        holder.orderIDTextView.setText(inflater.getContext().getString(R.string.order_number) + " " + order.getID());
         holder.dateTextView.setText(formatter.format(order.getDate()));
-        holder.totalTextView.setText( "€" + String.valueOf(order.getTotal()) + " (" + String.format("%.2f", order.getTotal()) + " USD)");
+        holder.paymentIDTextView.setText(order.getPaymentIntentID());
+        holder.totalTextView.setText( "€" + String.format("%.2f", order.getTotal()) + " (" + String.format("%.2f", order.getTotalInUSD()) + " USD)");
 
         List<Product> itemList = orders.get(position).getItemsList();
         List<LinearLayout> linearLayoutList = new ArrayList<>();
@@ -85,7 +88,6 @@ public class PurchaseHistoryAdapter extends RecyclerView.Adapter<PurchaseHistory
             textView0.setLayoutParams(layoutParams);
             textView0.setWidth(20);
 
-
             TextView textView = new TextView(inflater.getContext());
             textView.setText(product.getName());
             textView.setTextSize(14);
@@ -93,9 +95,6 @@ public class PurchaseHistoryAdapter extends RecyclerView.Adapter<PurchaseHistory
             layoutParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 2.5f);
             textView.setLayoutParams(layoutParams);
             textView.setSingleLine(true);
-    /*        textView.setWidth(55);
-            textView.setMinWidth(55);
-            textView.setMaxWidth(55); */
             textView.setEllipsize(TextUtils.TruncateAt.END);
 
             TextView textView2 = new TextView(inflater.getContext());
@@ -104,12 +103,9 @@ public class PurchaseHistoryAdapter extends RecyclerView.Adapter<PurchaseHistory
             textView2.setGravity(Gravity.CENTER);
             textView2.setTextColor(inflater.getContext().getResources().getColor(R.color.black));
             textView2.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.5f));
-           /* textView2.setWidth(20);
-            textView2.setMinWidth(20);
-            textView2.setMaxWidth(20); */
 
             TextView textView3 = new TextView(inflater.getContext());
-            textView3.setText("€" + product.getPrice());
+            textView3.setText("€" + String.format("%.2f", product.getPrice()));
             textView3.setTextSize(14);
             textView3.setGravity(Gravity.CENTER);
             textView3.setTextColor(inflater.getContext().getResources().getColor(R.color.black));
@@ -129,8 +125,8 @@ public class PurchaseHistoryAdapter extends RecyclerView.Adapter<PurchaseHistory
             linearLayoutList.add(linearLayout);
         }
 
-        for(int i=0; i<linearLayoutList.size(); i++) {
-            holder.verticalLinearLayout.addView(linearLayoutList.get(i));
+        for(int j=0; j<linearLayoutList.size(); j++) {
+            holder.verticalLinearLayout.addView(linearLayoutList.get(j));
         }
 
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -154,12 +150,15 @@ public class PurchaseHistoryAdapter extends RecyclerView.Adapter<PurchaseHistory
                                             OrderCalls.deleteOrder(order, new Utilities.CatalogCallback() {
                                                 @Override
                                                 public void onResult(String message) {
+                                                    purchaseHistoryFragment.progressDialog.dismiss();
 
                                                     if(message.equals(purchaseHistoryFragment.getString(R.string.success))) {
-                                                        purchaseHistoryFragment.progressDialog.dismiss();
-                                                        purchaseHistoryFragment.adapter.notifyItemRemoved(position);
-                                                        purchaseHistoryFragment.orderList.remove(position);
+                                                        orders.remove(position);
+                                                        notifyItemRemoved(position);
                                                         purchaseHistoryFragment.updateViews();
+                                                    }
+                                                    else {
+                                                        Toast.makeText(inflater.getContext(), message, Toast.LENGTH_SHORT).show();
                                                     }
                                                 }
 
@@ -196,6 +195,13 @@ public class PurchaseHistoryAdapter extends RecyclerView.Adapter<PurchaseHistory
         });
     }
 
+    @Override
+    public void onViewRecycled(@NonNull ViewHolder holder) {
+        super.onViewRecycled(holder);
+        holder.verticalLinearLayout.removeAllViews();
+       // mBoundViewHolders.remove(holder);
+    }
+
     // total number of rows
     @Override
     public int getItemCount() {
@@ -207,6 +213,7 @@ public class PurchaseHistoryAdapter extends RecyclerView.Adapter<PurchaseHistory
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView orderIDTextView;
         TextView dateTextView;
+        TextView paymentIDTextView;
         TextView totalTextView;
         LinearLayout verticalLinearLayout;
         RelativeLayout relativeLayout;
@@ -215,6 +222,7 @@ public class PurchaseHistoryAdapter extends RecyclerView.Adapter<PurchaseHistory
             super(itemView);
             orderIDTextView = itemView.findViewById(R.id.orderIDTextView);
             dateTextView = itemView.findViewById(R.id.dateTextView);
+            paymentIDTextView = itemView.findViewById(R.id.paymentIDTextView);
             totalTextView = itemView.findViewById(R.id.totalTextView);
             verticalLinearLayout = itemView.findViewById(R.id.verticalLinearLayout);
             relativeLayout = itemView.findViewById(R.id.relativeLayout);

@@ -3,17 +3,47 @@
     <string name="title_home">Home</string>
     <string name="title_purchase_history">Purchase History</string>
     <string name="title_items_catalog">Items Catalog</string>
+    <string name="title_order_details">Order Details</string>
+    <string name="title_settings">Settings</string>
+
+    <!-- Home Fragment -->
+    <string name="zero">0</string>
+    <string name="one">1</string>
+    <string name="two">2</string>
+    <string name="three">3</string>
+    <string name="four">4</string>
+    <string name="five">5</string>
+    <string name="six">6</string>
+    <string name="seven">7</string>
+    <string name="eight">8</string>
+    <string name="nine">9</string>
+    <string name="doubleZero">00</string>
+    <string name="dot">.</string>
+    <string name="plus">+</string>
+    <string name="send_to_reader_button">Send to Reader</string>
 
     <!-- Purchase History Fragment -->
     <string name="no_transactions">No transactions to show</string>
+    <string name="order_number">Order #</string>
 
     <!-- Catalog Fragment -->
+    <string name="catalog_fragment_name">Catalog Fragment</string>
     <string name="order_details_button">Order Details \u27A1</string>
     <string name="no_products">No products to show</string>
     <string name="add_product_picture">Add a Product Photo!</string>
     <string name="take_picture">Take a Photo</string>
     <string name="choose_picture">Choose from Library</string>
     <string name="cancel">Cancel</string>
+
+    <!-- Order Details Fragment -->
+    <string name="order_details_fragment_name">Order Details Fragment</string>
+    <string name="order_details">Order Details</string>
+    <string name="finalize_order_button">Finalize Order</string>
+
+    <!-- Settings Fragment -->
+    <string name="set_reader_id_textview">Set Reader ID</string>
+    <string name="apply_settings_button">Apply Settings</string>
+    <string name="reader_id_edittext_hint">Provide Reader ID Here</string>
 
     <!-- Catalog View -->
     <string name="plus_button">+</string>
@@ -34,21 +64,31 @@
     <string name="are_you_sure_yes">Yes</string>
     <string name="are_you_sure_no">No</string>
 
-    <!-- Alert -->
+    <!-- Alert/Progress Dialog -->
     <string name="ok_alert">OK</string>
+    <string name="please_wait">Please Wait</string>
 
-    <!-- Toast -->
+    <!-- Toast/Alerts -->
     <string name="price_cant_be_zero">Price can\'t be set at 0</string>
     <string name="fill_all_fields">Please fill all fields</string>
     <string name="item_added">Item added successfully</string>
+    <string name="select_image">Please select an image first</string>
     <string name="item_updated">Item updated successfully</string>
     <string name="select_a_product_first">Please select a product first</string>
+    <string name="tap_card">Please tap the card on the reader to complete the payment process</string>
+    <string name="error">There was an error</string>
+    <string name="payment_successful">Payment was successful</string>
+    <string name="provide_an_appropriate_value">Provide an appropriate numerical value</string>
+    <string name="payment_got_cleared">In Progress Payment(s) got cleared</string>
+    <string name="provide_reader_id">Please provide a Reader ID</string>
+    <string name="reader_id_saved">Reader ID saved successfully</string>
 
     <!-- Menu -->
     <string name="add_item">Add Item</string>
     <string name="update_item">Update</string>
     <string name="delete_item">Delete</string>
     <string name="clear_item">Clear Order Items</string>
+    <string name="cancel_payment">Cancel Transaction</string>
 
     <!-- Permissions -->
     <string name="permissions_error">You don not have the permission to perform this action</string>
@@ -56,5 +96,9 @@
     <!-- API Responses -->
     <string name="success">success</string>
     <string name="failure">failure</string>
+
+    <!-- Payment Intent State/Events -->
+    <string name="in_progress">in_progress</string>
+    <string name="terminal_action_succeeded">terminal.reader.action_succeeded</string>
 
 </resources>

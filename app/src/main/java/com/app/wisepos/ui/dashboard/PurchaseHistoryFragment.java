@@ -6,9 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,10 +24,14 @@ import com.app.wisepos.databinding.FragmentPurchaseHistoryBinding;
 import com.app.wisepos.datamodels.Order;
 import com.app.wisepos.datamodels.Product;
 import com.app.wisepos.networking.CatalogCalls;
+import com.app.wisepos.networking.OrderCalls;
 import com.app.wisepos.ui.catalog.CatalogFragment;
+import com.app.wisepos.ui.order.OrderDetailsFragment;
+import com.app.wisepos.utilities.Shared_Preferences;
 import com.app.wisepos.utilities.Utilities;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -62,7 +69,7 @@ public class PurchaseHistoryFragment extends Fragment implements PurchaseHistory
 
     void setupProgressDialog() {
         progressDialog = new ProgressDialog(getActivity());
-        progressDialog = Utilities.setupProgressDialog(progressDialog);
+        progressDialog = Utilities.setupProgressDialog(getContext(), progressDialog);
     }
 
     void setupSwipeRefreshLayout() {
@@ -88,21 +95,36 @@ public class PurchaseHistoryFragment extends Fragment implements PurchaseHistory
     }
 
     void fetchOrders() {
-       // progressDialog.show();
-        List<Order> storeOrderList = new ArrayList<>();
-        List<Product> itemList = new ArrayList<>();
-        itemList.add(new Product("Africa Comic Book", "Chapter One ENGLISH", 10.2F));
-        itemList.add(new Product("Africa Wooden Standee", "Chui and Bibi", 9.25F));
+        progressDialog.show();
+        orderList.clear();
+        OrderCalls.getOrders(new Utilities.OrderCallback() {
+            @Override
+            public void onResult(String message) {
+                progressDialog.dismiss();
+                updateViews();
 
-        storeOrderList.add(new Order("MP-4557", new Date(), itemList, 55F));
-        orderList.addAll(storeOrderList);
-        adapter.notifyDataSetChanged();
+                if(swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            }
+
+            @Override
+            public void onResult(String message, List<Order> returnedOrderList) {
+                progressDialog.dismiss();
+                orderList.addAll(returnedOrderList);
+                Collections.reverse(orderList);
+                adapter.notifyDataSetChanged();
+
+                if(swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            }
+        });
     }
-
 
     @Override
     public void onRefresh() {
-
+        fetchOrders();
     }
 
     @Override

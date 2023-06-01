@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "634148796008",
+    "project_id": "wisepos-a5984",
+    "storage_bucket": "wisepos-a5984.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:634148796008:android:07c8835bbd6dc173c66ddd",
+        "android_client_info": {
+          "package_name": "com.app.wisepos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "634148796008-gfb2ajl83b31tp2uu7638cik7lv304s3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDZBHefQ70EloeCzQZupSwoIIuSKme3is"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "634148796008-gfb2ajl83b31tp2uu7638cik7lv304s3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

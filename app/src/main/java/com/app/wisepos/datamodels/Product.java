@@ -1,8 +1,9 @@
 package com.app.wisepos.datamodels;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class Product {
+public class Product implements Serializable {
     String id;
     String name;
     String description;
@@ -19,6 +20,24 @@ public class Product {
         this.price = Float.valueOf(0);
         this.usdRate = 0.91F;
         this.pictureURL = "";
+    }
+
+    public Product(String id, String name, String description, Float price, String pictureURL) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.quantity = 0;
+        this.price = price;
+        this.pictureURL = pictureURL;
+    }
+
+    public Product(String id, String name, String description, int quantity, Float price, String pictureURL) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.quantity = quantity;
+        this.price = price;
+        this.pictureURL = pictureURL;
     }
 
     public Product(String id, String name, String description, Float price, Float usdRate, String pictureURL) {
@@ -90,6 +109,10 @@ public class Product {
 
     public Float getPrice() {
         return price;
+    }
+
+    public Float getUSDRate() {
+        return usdRate;
     }
 
     public Float getPriceInCents() {

@@ -9,26 +9,36 @@ import java.util.Locale;
 public class Order {
 
     String id;
+    String paymentIntentID;
     Date date;
-    List<Product> itemsList;
+    List<Product> itemsList = new ArrayList<>();
     Float total;
+    Float usdRate;
 
     Order() {
         id = "";
+        paymentIntentID = "";
         date = new Date();
         itemsList = new ArrayList<>();
         total = 0F;
+        usdRate = 0.91F;
     }
 
-    public Order(String id, Date date, List<Product> itemsList, Float total) {
+    public Order(String id, String paymentIntentID, Date date, List<Product> itemsList, Float total, Float usdRate) {
         this.id = id;
+        this.paymentIntentID = paymentIntentID;
         this.date = date;
-        this.itemsList = itemsList;
+        this.itemsList.addAll(itemsList);
         this.total = total;
+        this.usdRate = usdRate;
     }
 
     public String getID() {
         return id;
+    }
+
+    public String getPaymentIntentID() {
+        return paymentIntentID;
     }
 
     public Date getDate() {
@@ -44,6 +54,6 @@ public class Order {
     }
 
     public Float getTotalInUSD() {
-        return  total;
+        return ((1/usdRate) * total);
     }
 }
